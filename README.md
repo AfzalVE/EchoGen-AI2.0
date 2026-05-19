@@ -235,4 +235,4 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-Built by Afzal & Arijit
+Built by Afzal
