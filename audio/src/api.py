@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from pathlib import Path
 import uuid
 from dotenv import load_dotenv
 import os
@@ -11,7 +12,16 @@ from src.utils.history import save_history, get_history_data, clear_history
 
 app = FastAPI()
 
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+OUTPUT_DIR = BASE_DIR / "outputs"
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+app.mount(
+    "/outputs",
+    StaticFiles(directory=BASE_DIR / "outputs"),
+    name="outputs"
+)
 
 load_dotenv()
 

@@ -1,0 +1,61 @@
+name: EchoGen CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build Backend Image
+      - name: Build Backend
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/echogen-backend:latest ./audio
+
+      # Build Frontend Image
+      - name: Build Frontend
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/echogen-frontend:latest ./frontend
+
+      # Push Backend Image
+      - name: Push Backend
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/echogen-backend:latest
+
+      # Push Frontend Image
+      - name: Push Frontend
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/echogen-frontend:latest
+
+      # Deploy to VPS
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/EchoGen-AI2.0
+
+            docker compose pull
+            docker compose down
+            docker compose up -d
